@@ -26,7 +26,7 @@ const CurtainModal: React.FC<CurtainModalProps> = ({ onLaunch }) => {
                         className="absolute z-50 flex flex-col items-center justify-center text-center p-4"
                     >
                         <h1 className="text-4xl md:text-6xl font-bold text-white mb-8 tracking-wider drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]">
-                            MSF KARIMPUZHA, EETHAPPAZHA CHALLENGE
+                            MSF KARIMPUZHA,<p>EETHAPPAZHA CHALLENGE</p>
                         </h1>
                         <motion.button
                             whileHover={{ scale: 1.1 }}
