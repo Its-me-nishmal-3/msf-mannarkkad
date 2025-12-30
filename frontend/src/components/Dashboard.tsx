@@ -83,7 +83,7 @@ const Dashboard: React.FC = () => {
                 <header className="flex justify-between items-center backdrop-blur-md bg-white/5 p-4 rounded-2xl border border-white/10 sticky top-4 z-50">
                     <div>
                         <h1 className="text-2xl md:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-cyan-400">
-                            MSF Mannarkkad
+                            MSF KARIMPUZHA
                         </h1>
                         <p className="text-gray-400 text-xs md:text-sm">Fruit Challenge 2025</p>
                     </div>
