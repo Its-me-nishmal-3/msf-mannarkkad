@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import PaymentModal from './PaymentModal';
+import CurtainModal from './CurtainModal';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 
@@ -38,6 +39,7 @@ const Dashboard: React.FC = () => {
         wardWise: {}
     });
     const [showModal, setShowModal] = useState(false);
+    const [hasLaunched, setHasLaunched] = useState(false);
 
     const fetchStats = async () => {
         try {
@@ -64,6 +66,12 @@ const Dashboard: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-[#0f172a] text-white font-sans selection:bg-emerald-500/30 pb-24 relative overflow-hidden">
+
+            {/* Launch Screen Overlay */}
+            {!hasLaunched && (
+                <CurtainModal onLaunch={() => setTimeout(() => setHasLaunched(true), 2000)} />
+            )}
+
             {/* Background Gradients */}
             <div className="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
                 <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-emerald-500/10 rounded-full blur-[120px]" />
@@ -79,12 +87,14 @@ const Dashboard: React.FC = () => {
                         </h1>
                         <p className="text-gray-400 text-xs md:text-sm">Fruit Challenge 2025</p>
                     </div>
-                    <button
-                        onClick={() => navigate('/history')}
-                        className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm transition-all border border-white/10"
-                    >
-                        History
-                    </button>
+                    <div className="flex gap-4">
+                        <button
+                            onClick={() => navigate('/history')}
+                            className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm transition-all border border-white/10"
+                        >
+                            History
+                        </button>
+                    </div>
                 </header>
 
                 {/* Main Content Area */}
@@ -212,8 +222,8 @@ const Dashboard: React.FC = () => {
                                     animate={{ opacity: 1, scale: 1 }}
                                     transition={{ delay: i * 0.05 }}
                                     className={`relative p-4 rounded-xl border transition-all duration-300 group ${isActive
-                                            ? 'bg-emerald-500/10 border-emerald-500/30 hover:bg-emerald-500/20'
-                                            : 'bg-white/5 border-white/5 hover:bg-white/10'
+                                        ? 'bg-emerald-500/10 border-emerald-500/30 hover:bg-emerald-500/20'
+                                        : 'bg-white/5 border-white/5 hover:bg-white/10'
                                         }`}
                                 >
                                     <p className="text-gray-400 text-xs uppercase tracking-wider mb-1 truncate" title={unitName}>{unitName}</p>
