@@ -57,7 +57,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ onClose }) => {
 
             // 2. Open Razorpay
             const options = {
-                key: "rzp_test_YOUR_KEY_ID",
+                key: "rzp_test_RyBSpddIVaWCHr",
                 amount: order.amount,
                 currency: "INR",
                 name: "Fruit Challenge",
