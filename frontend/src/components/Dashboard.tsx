@@ -15,7 +15,7 @@ import banner5 from '../assets/banner_5.jpg';
 import banner6 from '../assets/banner_6.jpg';
 import banner7 from '../assets/banner_7.jpg';
 
-const SOCKET_URL = 'http://localhost:5000';
+const SOCKET_URL = 'https://frute.nichu.dev';
 
 const UNIT_NAMES = [
     'ATTASSERY', 'AMBALAMPADAM', 'THOTTARA', 'KARIPAMANNA',

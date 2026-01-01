@@ -22,7 +22,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ onClose }) => {
 
         try {
             // 1. Create Order
-            const res = await fetch('http://localhost:5000/api/payment/create-order', {
+            const res = await fetch('https://frute.nichu.dev/api/payment/create-order', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ quantity }) // Send quantity
@@ -31,7 +31,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ onClose }) => {
 
             if (order.bypass) {
                 // Direct Verification for Test Mode
-                const verifyRes = await fetch('http://localhost:5000/api/payment/verify', {
+                const verifyRes = await fetch('https://frute.nichu.dev/api/payment/verify', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -65,7 +65,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ onClose }) => {
                 order_id: order.id,
                 handler: async function (response: any) {
                     // 3. Verify Payment
-                    const verifyRes = await fetch('http://localhost:5000/api/payment/verify', {
+                    const verifyRes = await fetch('https://frute.nichu.dev/api/payment/verify', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({

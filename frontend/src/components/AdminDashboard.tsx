@@ -8,7 +8,7 @@ import {
 } from 'recharts';
 import { io } from 'socket.io-client';
 
-const SOCKET_URL = 'http://localhost:5000';
+const SOCKET_URL = 'https://frute.nichu.dev';
 
 interface Payment {
     _id: string;
@@ -49,7 +49,7 @@ const AdminDashboard: React.FC = () => {
             if (search) params.append('search', search);
             if (wardFilter !== 'All') params.append('ward', wardFilter);
 
-            const res = await fetch(`http://localhost:5000/api/admin/payments?${params.toString()}`, {
+            const res = await fetch(`https://frute.nichu.dev/api/admin/payments?${params.toString()}`, {
                 headers: { 'Authorization': token }
             });
 
@@ -69,7 +69,7 @@ const AdminDashboard: React.FC = () => {
         const token = localStorage.getItem('adminToken');
         if (!token) return navigate('/login');
         try {
-            const res = await fetch(`http://localhost:5000/api/admin/analytics`, {
+            const res = await fetch(`https://frute.nichu.dev/api/admin/analytics`, {
                 headers: { 'Authorization': token }
             });
             const data = await res.json();
