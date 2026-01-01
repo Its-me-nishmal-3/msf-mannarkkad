@@ -100,7 +100,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ onClose }) => {
             rzp1.open();
         } catch (error) {
             console.error('Payment Error:', error);
-            alert('Something went wrong');
+            alert('payment not integrated , this in test mode');
         } finally {
             setLoading(false);
         }
