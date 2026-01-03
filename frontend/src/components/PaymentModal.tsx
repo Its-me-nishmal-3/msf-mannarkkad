@@ -29,35 +29,9 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ onClose }) => {
             });
             const order = await res.json();
 
-            if (order.bypass) {
-                // Direct Verification for Test Mode
-                const verifyRes = await fetch('https://frute.nichu.dev/api/payment/verify', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        razorpay_order_id: order.id,
-                        razorpay_payment_id: `pay_test_${Date.now()}`,
-                        razorpay_signature: 'test_signature',
-                        name,
-                        ward,
-                        quantity,
-                        mobile
-                    })
-                });
-                const verifyData = await verifyRes.json();
-
-                if (verifyData.status === 'success') {
-                    onClose();
-                    navigate('/receipt', { state: { payment: verifyData.payment } });
-                } else {
-                    alert('Payment verification failed');
-                }
-                return;
-            }
-
             // 2. Open Razorpay
             const options = {
-                key: "rzp_test_RyBSpddIVaWCHr",
+                key: "rzp_live_RzT4lYAxlCbFnI",
                 amount: order.amount,
                 currency: "INR",
                 name: "Fruit Challenge",
@@ -65,26 +39,31 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ onClose }) => {
                 order_id: order.id,
                 handler: async function (response: any) {
                     // 3. Verify Payment
-                    const verifyRes = await fetch('https://frute.nichu.dev/api/payment/verify', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            razorpay_order_id: response.razorpay_order_id,
-                            razorpay_payment_id: response.razorpay_payment_id,
-                            razorpay_signature: response.razorpay_signature,
-                            name,
-                            ward,
-                            quantity,
-                            mobile
-                        })
-                    });
-                    const verifyData = await verifyRes.json();
+                    try {
+                        const verifyRes = await fetch('https://frute.nichu.dev/api/payment/verify', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                razorpay_order_id: response.razorpay_order_id,
+                                razorpay_payment_id: response.razorpay_payment_id,
+                                razorpay_signature: response.razorpay_signature,
+                                name,
+                                ward,
+                                quantity,
+                                mobile
+                            })
+                        });
+                        const verifyData = await verifyRes.json();
 
-                    if (verifyData.status === 'success') {
-                        onClose();
-                        navigate('/receipt', { state: { payment: verifyData.payment } });
-                    } else {
-                        alert('Payment verification failed');
+                        if (verifyData.status === 'success') {
+                            onClose();
+                            navigate('/receipt', { state: { payment: verifyData.payment } });
+                        } else {
+                            alert('Payment verification failed');
+                        }
+                    } catch (verifyError) {
+                        console.error('Verification Error:', verifyError);
+                        alert('Payment verification failed during server check');
                     }
                 },
                 prefill: {
@@ -93,15 +72,23 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ onClose }) => {
                 },
                 theme: {
                     color: "#10b981"
+                },
+                modal: {
+                    ondismiss: function () {
+                        setLoading(false);
+                    }
                 }
             };
 
             const rzp1 = new (window as any).Razorpay(options);
+            rzp1.on('payment.failed', function (response: any) {
+                alert(response.error.description);
+                setLoading(false);
+            });
             rzp1.open();
         } catch (error) {
             console.error('Payment Error:', error);
-            alert('payment not integrated , this in test mode');
-        } finally {
+            alert('Something went wrong initiating the payment');
             setLoading(false);
         }
     };
