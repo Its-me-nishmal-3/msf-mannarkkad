@@ -29,9 +29,9 @@ const Receipt: React.FC = () => {
 
                 <div className="text-center mb-8 relative z-10">
                     <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-emerald-600 mb-2">
-                        Fruit Challenge
+                        Dates Challenge
                     </h1>
-                    <p className="text-gray-500 text-sm">Thank you for your support! 🍎</p>
+                    <p className="text-gray-500 text-sm">Thank you for your support!</p>
                 </div>
 
                 <div className="space-y-4 relative z-10">

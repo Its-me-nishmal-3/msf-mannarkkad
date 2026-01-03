@@ -80,9 +80,9 @@ const Dashboard: React.FC = () => {
                 <header className="flex justify-between items-center backdrop-blur-md bg-white/5 p-4 rounded-2xl border border-white/10 sticky top-4 z-50">
                     <div>
                         <h1 className="text-2xl md:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-cyan-400">
-                            MSF KARIMPUZHA
+                            msf കരിമ്പുഴ ഈത്തപ്പഴ ചലഞ്ച് 2026
                         </h1>
-                        <p className="text-gray-400 text-xs md:text-sm">Fruit Challenge 2025</p>
+                        <p className="text-gray-400 text-xs md:text-sm">ഈത്തപ്പഴ ചലഞ്ച് 2026</p>
                     </div>
                     <div className="flex gap-4">
                         <button
@@ -171,8 +171,7 @@ const Dashboard: React.FC = () => {
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
                             <div className="absolute bottom-0 left-0 w-full p-6 text-center pointer-events-none">
-                                <p className="text-emerald-400 font-bold tracking-widest text-sm uppercase mb-1">Join the Cause</p>
-                                <h3 className="text-2xl font-bold text-white">Fruit Challenge</h3>
+
                             </div>
                         </motion.div>
                     </div>
@@ -250,7 +249,7 @@ const Dashboard: React.FC = () => {
                         onClick={() => setShowModal(true)}
                         className="pointer-events-auto bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold text-lg md:text-xl py-4 px-12 rounded-full shadow-2xl shadow-emerald-500/30 hover:shadow-emerald-500/50 border border-emerald-400/20 backdrop-blur-sm flex items-center gap-2"
                     >
-                        <span>🍇</span> Pay Now ₹350
+                        Pay Now ₹350
                     </motion.button>
                 </div>
 

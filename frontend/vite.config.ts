@@ -10,9 +10,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
       manifest: {
-        name: 'Fruit Challenge Payment',
-        short_name: 'FruitPay',
-        description: 'Realtime payment tracking for Fruit Challenge',
+        name: 'Dates Challenge Payment',
+        short_name: 'DatesPay',
+        description: 'Realtime payment tracking for Dates Challenge',
         theme_color: '#0f172a',
         icons: [
           {

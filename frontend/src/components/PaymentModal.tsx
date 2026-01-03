@@ -10,7 +10,7 @@ interface PaymentModalProps {
 const PaymentModal: React.FC<PaymentModalProps> = ({ onClose }) => {
     const [name, setName] = useState('');
     const [mobile, setMobile] = useState('');
-    const [ward, setWard] = useState('ATTASSERY');
+    const [ward, setWard] = useState('SELECT YOUR WARD');
     const [quantity, setQuantity] = useState(1);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
@@ -18,6 +18,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ onClose }) => {
     const handlePayment = async () => {
         if (!name) return alert('Please enter your name');
         if (!mobile || mobile.length < 10) return alert('Please enter a valid mobile number');
+        if (ward === 'SELECT YOUR WARD') return alert('Please select your ward');
         setLoading(true);
 
         try {
@@ -34,8 +35,8 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ onClose }) => {
                 key: "rzp_live_RzT4lYAxlCbFnI",
                 amount: order.amount,
                 currency: "INR",
-                name: "Fruit Challenge",
-                description: `Support for ${quantity} Packs`,
+                name: "msf കരിമ്പുഴ ഈത്തപ്പഴ ചലഞ്ച്",
+                description: ` ${quantity} Packs`,
                 order_id: order.id,
                 handler: async function (response: any) {
                     // 3. Verify Payment
