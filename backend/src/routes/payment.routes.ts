@@ -123,15 +123,18 @@ router.post('/payment-failed', async (req, res) => {
 router.get('/stats', async (req, res) => {
     try {
         const totalAmount = await Payment.aggregate([
+            { $match: { status: 'success' } },
             { $group: { _id: null, total: { $sum: '$amount' } } }
         ]);
 
         // Sum quantity instead of countDocuments for total packs/participants
         const totalCount = await Payment.aggregate([
+            { $match: { status: 'success' } },
             { $group: { _id: null, total: { $sum: '$quantity' } } }
         ]);
 
         const wardStats = await Payment.aggregate([
+            { $match: { status: 'success' } },
             { $group: { _id: '$ward', total: { $sum: '$amount' } } }
         ]);
 
