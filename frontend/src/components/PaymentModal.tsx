@@ -153,14 +153,21 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ onClose }) => {
                             onChange={(e) => setWard(e.target.value)}
                             className="glass-input w-full bg-[#1e293b] text-white"
                         >
+                            <option value="SELECT YOUR WARD" disabled>
+                                SELECT YOUR WARD
+                            </option>
+
                             {[
                                 'ATTASSERY', 'AMBALAMPADAM', 'THOTTARA', 'KARIPAMANNA',
                                 'PEZHUMATTA', 'KULUKKILIYAD', 'KARIMPUZHA', 'POMBRA',
                                 'KOOTTILAKKADAV', 'KOLLAMKODE', 'VAKKADAPURAM', 'OTHERS'
                             ].map((unit, i) => (
-                                <option key={i} value={unit} className="bg-[#1e293b] text-white">{unit}</option>
+                                <option key={i} value={unit} className="bg-[#1e293b] text-white">
+                                    {unit}
+                                </option>
                             ))}
                         </select>
+
                     </div>
 
                     {/* Quantity Selector */}
