@@ -17,16 +17,6 @@ router.post('/create-order', async (req, res) => {
         const { quantity = 1 } = req.body;
         const amount = 350 * quantity;
 
-        console.log('Payment Mode:', process.env.PAYMENT_MODE);
-        if (process.env.PAYMENT_MODE?.trim() === 'false') {
-            return res.json({
-                id: `order_test_${Date.now()}`,
-                amount: amount * 100,
-                bypass: true,
-                quantity
-            });
-        }
-
         const options = {
             amount: amount * 100, // amount in paisa
             currency: 'INR',
@@ -48,17 +38,12 @@ router.post('/verify', async (req, res) => {
 
         const body = razorpay_order_id + "|" + razorpay_payment_id;
 
-        let isValid = false;
+        const expectedSignature = crypto
+            .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET || 'test_key_secret')
+            .update(body.toString())
+            .digest('hex');
 
-        if (process.env.PAYMENT_MODE?.trim() === 'false') {
-            isValid = true;
-        } else {
-            const expectedSignature = crypto
-                .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET || 'test_key_secret')
-                .update(body.toString())
-                .digest('hex');
-            isValid = expectedSignature === razorpay_signature;
-        }
+        const isValid = expectedSignature === razorpay_signature;
 
         if (isValid) {
             // Save Payment

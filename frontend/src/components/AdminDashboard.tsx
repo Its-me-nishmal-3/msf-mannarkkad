@@ -19,6 +19,7 @@ interface Payment {
     quantity: number;
     paymentId: string;
     createdAt: string;
+    status: string;
 }
 
 interface Analytics {
@@ -245,10 +246,13 @@ const AdminDashboard: React.FC = () => {
                             className="glass-input w-full bg-[#1e293b] text-white"
                         >
                             <option value="All" className="bg-[#1e293b] text-white">All Wards</option>
-                            {[...Array(9)].map((_, i) => (
-                                <option key={i} value={`Ward ${i + 1}`} className="bg-[#1e293b] text-white">{`Ward ${i + 1}`}</option>
+                            {[
+                                'ATTASSERY', 'AMBALAMPADAM', 'THOTTARA', 'KARIPAMANNA',
+                                'PEZHUMATTA', 'KULUKKILIYAD', 'KARIMPUZHA', 'POMBRA',
+                                'KOOTTILAKKADAV', 'KOLLAMKODE', 'VAKKADAPURAM', 'OTHERS'
+                            ].map((ward, i) => (
+                                <option key={i} value={ward} className="bg-[#1e293b] text-white">{ward}</option>
                             ))}
-                            <option value="Other" className="bg-[#1e293b] text-white">Other</option>
                         </select>
                     </div>
 
@@ -264,6 +268,7 @@ const AdminDashboard: React.FC = () => {
                                         <th className="p-4">Ward</th>
                                         <th className="p-4">Qty</th>
                                         <th className="p-4">Amount</th>
+                                        <th className="p-4">Status</th>
                                         <th className="p-4 hidden md:table-cell">Payment ID</th>
                                     </tr>
                                 </thead>
@@ -281,6 +286,12 @@ const AdminDashboard: React.FC = () => {
                                                 <td className="p-4 text-gray-300">{p.ward}</td>
                                                 <td className="p-4 text-gray-300">{p.quantity}</td>
                                                 <td className="p-4 text-emerald-400 font-bold">₹{p.amount}</td>
+                                                <td className="p-4">
+                                                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${p.status === 'success' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'
+                                                        }`}>
+                                                        {p.status ? (p.status.charAt(0).toUpperCase() + p.status.slice(1)) : 'Success'}
+                                                    </span>
+                                                </td>
                                                 <td className="p-4 text-xs text-gray-500 font-mono hidden md:table-cell">{p.paymentId}</td>
                                             </tr>
                                         ))
