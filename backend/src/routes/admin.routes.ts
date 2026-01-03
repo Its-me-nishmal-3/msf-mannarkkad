@@ -36,6 +36,7 @@ router.get('/analytics', verifyToken, async (req, res) => {
     try {
         // 1. Overall Stats
         const overallStats = await Payment.aggregate([
+            { $match: { status: 'success' } },
             {
                 $group: {
                     _id: null,
@@ -49,6 +50,7 @@ router.get('/analytics', verifyToken, async (req, res) => {
 
         // 2. Ward Wise Stats
         const wardStats = await Payment.aggregate([
+            { $match: { status: 'success' } },
             {
                 $group: {
                     _id: '$ward',
@@ -64,6 +66,7 @@ router.get('/analytics', verifyToken, async (req, res) => {
         const dailyStats = await Payment.aggregate([
             {
                 $match: {
+                    status: 'success',
                     createdAt: {
                         $gte: new Date(new Date().setDate(new Date().getDate() - 7))
                     }
