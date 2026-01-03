@@ -14,7 +14,7 @@ const razorpay = new Razorpay({
 // Create Order
 router.post('/create-order', async (req, res) => {
     try {
-        const { quantity = 1 } = req.body;
+        const { quantity = 1, name, mobile, ward } = req.body;
         const amount = 350 * quantity;
 
         const options = {
@@ -24,7 +24,28 @@ router.post('/create-order', async (req, res) => {
         };
 
         const order = await razorpay.orders.create(options);
-        res.json({ ...order, quantity }); // Pass quantity back to frontend if needed
+
+        // Save initial "Created" state
+        const payment = new Payment({
+            name,
+            ward,
+            amount,
+            quantity,
+            mobile,
+            paymentId: 'pending',
+            orderId: order.id,
+            status: 'created'
+        });
+        await payment.save();
+
+        // Emit Socket Update for Admin
+        io.emit('payment_created', {
+            amount: payment.amount,
+            ward: ward,
+            payment
+        });
+
+        res.json({ ...order, quantity });
     } catch (error) {
         console.error('Error creating order:', error);
         res.status(500).send('Error creating order');
@@ -34,7 +55,7 @@ router.post('/create-order', async (req, res) => {
 // Verify Payment
 router.post('/verify', async (req, res) => {
     try {
-        const { razorpay_order_id, razorpay_payment_id, razorpay_signature, name, ward } = req.body;
+        const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 
         const body = razorpay_order_id + "|" + razorpay_payment_id;
 
@@ -46,35 +67,55 @@ router.post('/verify', async (req, res) => {
         const isValid = expectedSignature === razorpay_signature;
 
         if (isValid) {
-            // Save Payment
-            const { quantity = 1, mobile } = req.body; // Expect quantity and mobile
-            const payment = new Payment({
-                name,
-                ward,
-                amount: 350 * quantity,
-                quantity,
-                mobile,
-                paymentId: razorpay_payment_id,
-                orderId: razorpay_order_id,
-                status: 'success'
-            });
-            await payment.save();
+            // Find and Update Payment
+            const payment = await Payment.findOne({ orderId: razorpay_order_id });
 
-            // Emit Socket Update
-            io.emit('payment_success', {
-                amount: payment.amount,
-                ward: ward,
-                quantity: payment.quantity,
-                payment
-            });
+            if (payment) {
+                payment.paymentId = razorpay_payment_id;
+                payment.status = 'success';
+                await payment.save();
 
-            res.json({ status: 'success', payment });
+                // Emit Socket Update
+                io.emit('payment_success', {
+                    amount: payment.amount,
+                    ward: payment.ward,
+                    quantity: payment.quantity,
+                    payment
+                });
+
+                res.json({ status: 'success', payment });
+            } else {
+                res.status(404).json({ status: 'error', message: 'Payment record not found' });
+            }
         } else {
             res.status(400).json({ status: 'failure', message: 'Invalid signature' });
         }
     } catch (error) {
         console.error('Error verifying payment:', error);
         res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+    }
+});
+
+// Payment Failed Webhook/Endpoint
+router.post('/payment-failed', async (req, res) => {
+    try {
+        const { order_id, reason, payment_id } = req.body;
+
+        const payment = await Payment.findOne({ orderId: order_id });
+        if (payment) {
+            payment.status = 'failed';
+            if (payment_id) payment.paymentId = payment_id;
+            await payment.save();
+
+            io.emit('payment_failed', { payment });
+
+            res.json({ status: 'updated' });
+        } else {
+            res.status(404).json({ message: 'Payment not found' });
+        }
+    } catch (error) {
+        console.error('Error marking payment failed:', error);
+        res.status(500).send('Error');
     }
 });
 

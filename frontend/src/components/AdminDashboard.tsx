@@ -86,9 +86,17 @@ const AdminDashboard: React.FC = () => {
         const socket = io(SOCKET_URL);
         socket.on('connect', () => console.log('Admin Socket Connected'));
         socket.on('payment_success', () => {
-            console.log('New Payment Received. Refreshing Admin Data...');
+            console.log('Payment Success. Refreshing...');
             fetchAnalytics();
-            fetchPayments(); // Refresh payments list if active, or it will refresh when tab changes anyway
+            fetchPayments();
+        });
+        socket.on('payment_created', () => {
+            console.log('New Payment Created. Refreshing...');
+            fetchPayments();
+        });
+        socket.on('payment_failed', () => {
+            console.log('Payment Failed. Refreshing...');
+            fetchPayments();
         });
 
         return () => {
@@ -287,7 +295,11 @@ const AdminDashboard: React.FC = () => {
                                                 <td className="p-4 text-gray-300">{p.quantity}</td>
                                                 <td className="p-4 text-emerald-400 font-bold">₹{p.amount}</td>
                                                 <td className="p-4">
-                                                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${p.status === 'success' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'
+                                                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${p.status === 'success'
+                                                        ? 'bg-emerald-500/10 text-emerald-400'
+                                                        : p.status === 'failed'
+                                                            ? 'bg-red-500/10 text-red-400'
+                                                            : 'bg-amber-500/10 text-amber-400'
                                                         }`}>
                                                         {p.status ? (p.status.charAt(0).toUpperCase() + p.status.slice(1)) : 'Success'}
                                                     </span>

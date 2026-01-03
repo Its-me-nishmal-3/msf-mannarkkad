@@ -21,11 +21,11 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ onClose }) => {
         setLoading(true);
 
         try {
-            // 1. Create Order
+            // 1. Create Order (Sends user details to save as "Created")
             const res = await fetch('https://frute.nichu.dev/api/payment/create-order', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ quantity }) // Send quantity
+                body: JSON.stringify({ quantity, name, mobile, ward })
             });
             const order = await res.json();
 
@@ -46,11 +46,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ onClose }) => {
                             body: JSON.stringify({
                                 razorpay_order_id: response.razorpay_order_id,
                                 razorpay_payment_id: response.razorpay_payment_id,
-                                razorpay_signature: response.razorpay_signature,
-                                name,
-                                ward,
-                                quantity,
-                                mobile
+                                razorpay_signature: response.razorpay_signature
                             })
                         });
                         const verifyData = await verifyRes.json();
@@ -82,6 +78,17 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ onClose }) => {
 
             const rzp1 = new (window as any).Razorpay(options);
             rzp1.on('payment.failed', function (response: any) {
+                // Report failure to backend
+                fetch('https://frute.nichu.dev/api/payment/payment-failed', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        order_id: response.error.metadata.order_id,
+                        payment_id: response.error.metadata.payment_id,
+                        reason: response.error.description
+                    })
+                });
+
                 alert(response.error.description);
                 setLoading(false);
             });
