@@ -157,7 +157,7 @@ router.get('/stats', async (req, res) => {
 // Get History (Limit 50)
 router.get('/history', async (req, res) => {
     try {
-        const history = await Payment.find({ status: 'success' }).sort({ createdAt: -1 }).limit(50);
+        const history = await Payment.find().sort({ createdAt: -1 }).limit(50);
         res.json(history);
     } catch (error) {
         console.error('Error fetching history:', error);
