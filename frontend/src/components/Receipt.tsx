@@ -17,74 +17,72 @@ const Receipt: React.FC = () => {
 
     const { payment } = state;
 
+    // Coordinates logic based on 2560x3200 image
+    // Rect: 285, 861, 1444, 986
+    // Top: 861 / 3200 = 26.90625%
+    // Left: 285 / 2560 = 11.1328125%
+    // Width: (1444 - 285) / 2560 = 1159 / 2560 = 45.2734375%
+    // Height: (986 - 861) / 3200 = 125 / 3200 = 3.90625%
+
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center p-4">
-            <div
-                ref={receiptRef}
-                className="bg-white text-gray-900 p-8 rounded-3xl shadow-2xl max-w-md w-full relative overflow-hidden"
-            >
-                {/* Decorative Background Elements */}
-                <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-emerald-500" />
-                <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-emerald-100 rounded-full blur-3xl opacity-50" />
+        <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gray-50">
+            <div className="relative w-full max-w-lg shadow-2xl rounded-lg overflow-hidden">
+                {/* Print container */}
+                <div ref={receiptRef} className="relative w-full">
+                    <img
+                        src="/ricipt_thanks_with_name.jpg"
+                        alt="Receipt"
+                        className="w-full h-auto block"
+                    />
 
-                <div className="text-center mb-8 relative z-10">
-                    <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-emerald-600 mb-2">
-                        Dates Challenge
-                    </h1>
-                    <p className="text-gray-500 text-sm">Thank you for your support!</p>
-                </div>
-
-                <div className="space-y-4 relative z-10">
-                    <div className="flex justify-between border-b border-gray-100 pb-2">
-                        <span className="text-gray-500">Date</span>
-                        <span className="font-semibold">{new Date(payment.createdAt).toLocaleDateString()}</span>
-                    </div>
-                    <div className="flex justify-between border-b border-gray-100 pb-2">
-                        <span className="text-gray-500">Name</span>
-                        <span className="font-semibold">{payment.name}</span>
-                    </div>
-                    <div className="flex justify-between border-b border-gray-100 pb-2">
-                        <span className="text-gray-500">Ward</span>
-                        <span className="font-semibold">{payment.ward}</span>
-                    </div>
-                    {payment.quantity > 1 && (
-                        <div className="flex justify-between border-b border-gray-100 pb-2">
-                            <span className="text-gray-500">Packs</span>
-                            <span className="font-semibold">{payment.quantity}</span>
-                        </div>
-                    )}
-                    <div className="flex justify-between border-b border-gray-100 pb-2">
-                        <span className="text-gray-500">Payment ID</span>
-                        <span className="font-mono text-xs">{payment.paymentId}</span>
+                    <div
+                        className="absolute flex items-center justify-center overflow-hidden"
+                        style={{
+                            top: '26.9%',
+                            left: '11.1%',
+                            width: '45.3%',
+                            height: '3.9%',
+                            color: '#751d08',
+                        }}
+                    >
+                        {/* Using responsive font size relative to container width approx via clamp or just confident bold text */}
+                        <span className="font-bold text-[1.5vw] sm:text-[2vw] md:text-lg lg:text-xl uppercase tracking-wide truncate px-2 w-full text-center">
+                            {payment.name}
+                        </span>
                     </div>
 
-                    <div className="mt-8 pt-4 border-t-2 border-dashed border-gray-200">
-                        <div className="flex justify-between items-center text-xl font-bold">
-                            <span>Total Paid</span>
-                            <span className="text-emerald-600">₹{payment.amount}</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="mt-8 text-center text-xs text-gray-400">
-                    <p>This is a computer generated receipt.</p>
+                    {/* Hidden fields if we want to add date/amount later in other blank spots, 
+                        but requirement was just name. 
+                    */}
                 </div>
             </div>
 
-            <div className="mt-8 flex gap-4">
+            <div className="mt-6 flex gap-4 print:hidden">
                 <button
                     onClick={() => window.print()}
-                    className="glass-button flex items-center gap-2"
+                    className="flex items-center gap-2 px-6 py-2 bg-emerald-600 text-white rounded-full hover:bg-emerald-700 transition-colors shadow-lg font-medium"
                 >
                     <Download size={18} /> Download
                 </button>
                 <button
                     onClick={() => navigate('/')}
-                    className="glass-button bg-gray-600 hover:bg-gray-500 flex items-center gap-2"
+                    className="flex items-center gap-2 px-6 py-2 bg-gray-600 text-white rounded-full hover:bg-gray-700 transition-colors shadow-lg font-medium"
                 >
                     <Home size={18} /> Home
                 </button>
             </div>
+
+            {/* Global print styles to ensure background image prints if user settings allow, 
+                but standard img tag usually prints fine. 
+                We might want to hide the buttons in print mode.
+            */}
+            <style>{`
+                @media print {
+                    @page { margin: 0; }
+                    body { -webkit-print-color-adjust: exact; }
+                    .print\\:hidden { display: none !important; }
+                }
+            `}</style>
         </div>
     );
 };
