@@ -1,11 +1,11 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Download, Home } from 'lucide-react';
+import { Download, Home, Loader2 } from 'lucide-react';
 
 const Receipt: React.FC = () => {
     const { state } = useLocation();
     const navigate = useNavigate();
-    const receiptRef = useRef<HTMLDivElement>(null);
+    const [isDownloading, setIsDownloading] = useState(false);
 
     useEffect(() => {
         if (!state?.payment) {
@@ -17,18 +17,66 @@ const Receipt: React.FC = () => {
 
     const { payment } = state;
 
-    // Coordinates logic based on 2560x3200 image
-    // Rect: 285, 861, 1444, 986
-    // Top: 861 / 3200 = 26.90625%
-    // Left: 285 / 2560 = 11.1328125%
-    // Width: (1444 - 285) / 2560 = 1159 / 2560 = 45.2734375%
-    // Height: (986 - 861) / 3200 = 125 / 3200 = 3.90625%
+    const handleDownload = async () => {
+        setIsDownloading(true);
+        try {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
+
+            // Original dimensions
+            canvas.width = 2560;
+            canvas.height = 3200;
+
+            img.src = '/ricipt_thanks_with_name.jpg';
+
+            await new Promise((resolve, reject) => {
+                img.onload = resolve;
+                img.onerror = reject;
+            });
+
+            if (ctx) {
+                // Draw background
+                ctx.drawImage(img, 0, 0, 2560, 3200);
+
+                // Configure text
+                // 3.9% height of 3200 is ~125px. Let's use ~80px font size for high res.
+                ctx.font = 'bold 100px Arial, sans-serif';
+                ctx.fillStyle = '#751d08';
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'middle';
+
+                // Coordinates
+                // Left: 11.13% -> 285px
+                // Top: 26.9% -> 861px
+                // Height: 125px. Center Y = 861 + (125/2) = ~923px
+                const x = 285;
+                const y = 923;
+
+                ctx.fillText(payment.name.toUpperCase(), x, y);
+
+                // Trigger download
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+                const link = document.createElement('a');
+                link.download = `receipt-${payment.name.replace(/\s+/g, '-').toLowerCase()}.jpg`;
+                link.href = dataUrl;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        } catch (error) {
+            console.error('Error generating receipt:', error);
+            alert('Failed to generate receipt image. Please try again.');
+        } finally {
+            setIsDownloading(false);
+        }
+    };
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gray-50">
             <div className="relative w-full max-w-lg shadow-2xl rounded-lg overflow-hidden">
-                {/* Print container */}
-                <div ref={receiptRef} className="relative w-full">
+                {/* Display Container */}
+                <div className="relative w-full">
                     <img
                         src="/ricipt_thanks_with_name.jpg"
                         alt="Receipt"
@@ -36,7 +84,7 @@ const Receipt: React.FC = () => {
                     />
 
                     <div
-                        className="absolute flex items-center justify-center overflow-hidden"
+                        className="absolute flex items-center overflow-hidden"
                         style={{
                             top: '26.9%',
                             left: '11.1%',
@@ -45,44 +93,37 @@ const Receipt: React.FC = () => {
                             color: '#751d08',
                         }}
                     >
-                        {/* Using responsive font size relative to container width approx via clamp or just confident bold text */}
-                        <span className="font-bold text-[1.5vw] sm:text-[2vw] md:text-lg lg:text-xl uppercase tracking-wide truncate px-2 w-full text-center">
+                        {/* Responsive text: Left aligned */}
+                        <span className="font-bold text-[3.5vw] sm:text-[2.5vw] md:text-xl lg:text-2xl uppercase tracking-wide truncate w-full text-left leading-none pl-2">
                             {payment.name}
                         </span>
                     </div>
-
-                    {/* Hidden fields if we want to add date/amount later in other blank spots, 
-                        but requirement was just name. 
-                    */}
                 </div>
             </div>
 
-            <div className="mt-6 flex gap-4 print:hidden">
+            <div className="mt-8 flex gap-4 w-full max-w-xs justify-center">
                 <button
-                    onClick={() => window.print()}
-                    className="flex items-center gap-2 px-6 py-2 bg-emerald-600 text-white rounded-full hover:bg-emerald-700 transition-colors shadow-lg font-medium"
+                    onClick={handleDownload}
+                    disabled={isDownloading}
+                    className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-all shadow-lg font-bold active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
                 >
-                    <Download size={18} /> Download
+                    {isDownloading ? (
+                        <>
+                            <Loader2 size={20} className="animate-spin" /> Generating...
+                        </>
+                    ) : (
+                        <>
+                            <Download size={20} /> Download
+                        </>
+                    )}
                 </button>
                 <button
                     onClick={() => navigate('/')}
-                    className="flex items-center gap-2 px-6 py-2 bg-gray-600 text-white rounded-full hover:bg-gray-700 transition-colors shadow-lg font-medium"
+                    className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-white text-gray-700 border border-gray-200 rounded-xl hover:bg-gray-50 transition-all shadow-lg font-bold active:scale-95"
                 >
-                    <Home size={18} /> Home
+                    <Home size={20} /> Home
                 </button>
             </div>
-
-            {/* Global print styles to ensure background image prints if user settings allow, 
-                but standard img tag usually prints fine. 
-                We might want to hide the buttons in print mode.
-            */}
-            <style>{`
-                @media print {
-                    @page { margin: 0; }
-                    body { -webkit-print-color-adjust: exact; }
-                    .print\\:hidden { display: none !important; }
-                }
-            `}</style>
         </div>
     );
 };
