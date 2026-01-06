@@ -22,7 +22,7 @@ const History: React.FC = () => {
         const fetchHistory = async () => {
             try {
                 // Fetch from backend
-                const res = await fetch('https://frute.nichu.dev/api/payment/history');
+                const res = await fetch('https://msf-karimpuzha.onrender.com/api/payment/history');
                 const data = await res.json();
                 setHistory(data);
             } catch (error) {
