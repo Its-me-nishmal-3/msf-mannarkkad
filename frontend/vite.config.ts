@@ -8,11 +8,12 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      injectRegister: 'auto',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
       manifest: {
-        name: 'Dates Challenge Payment',
-        short_name: 'DatesPay',
-        description: 'Realtime payment tracking for Dates Challenge',
+        name: 'Karimpuzha MSF Dates Challenge',
+        short_name: 'Karimpuzha MSF',
+        description: 'Join the Karimpuzha MSF Dates Challenge 2026',
         theme_color: '#0f172a',
         icons: [
           {
