@@ -36,7 +36,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ onClose }) => {
                 amount: order.amount,
                 currency: "INR",
                 name: "msf കരിമ്പുഴ ഈത്തപ്പഴ ചലഞ്ച്",
-                description: `MSF KARIMPUZHA - 2026`,
+                description: `msf karimpuzha dates challenge 2026`,
                 order_id: order.id,
                 handler: async function (response: any) {
                     // 3. Verify Payment
