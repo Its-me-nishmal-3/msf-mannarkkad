@@ -7,7 +7,7 @@ const ShippingPolicy = () => {
             <h1 className="text-3xl font-bold mb-6 text-emerald-400">Shipping Policy</h1>
             <div className="bg-gray-900 rounded-lg p-6 shadow-lg border border-gray-800 text-gray-300 space-y-4">
                 <p>
-                    At MSF Mannarkkad, we are committed to delivering your orders promptly and efficiently.
+                    At Karimpuzha MSF, we are committed to delivering your orders promptly and efficiently.
                 </p>
 
                 <h2 className="text-xl font-semibold text-white mt-4">Shipping Information Collection</h2>

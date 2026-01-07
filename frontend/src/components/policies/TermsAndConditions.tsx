@@ -6,7 +6,7 @@ const TermsAndConditions = () => {
         <div className="container mx-auto px-4 py-8 max-w-4xl">
             <h1 className="text-3xl font-bold mb-6 text-emerald-400">Terms and Conditions</h1>
             <div className="bg-gray-900 rounded-lg p-6 shadow-lg border border-gray-800 text-gray-300 space-y-4">
-                <p>Welcome to MSF Mannarkkad!</p>
+                <p>Welcome to Karimpuzha MSF!</p>
                 <p>These terms and conditions outline the rules and regulations for the use of our website.</p>
 
                 <h2 className="text-xl font-semibold text-white mt-4">Products and Pricing</h2>

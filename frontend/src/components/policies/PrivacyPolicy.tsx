@@ -7,7 +7,7 @@ const PrivacyPolicy = () => {
             <h1 className="text-3xl font-bold mb-6 text-emerald-400">Privacy Policy</h1>
             <div className="bg-gray-900 rounded-lg p-6 shadow-lg border border-gray-800 text-gray-300 space-y-4">
                 <p>
-                    Your privacy is important to us. It is MSF Mannarkkad's policy to respect your privacy regarding any information we may collect from you across our website.
+                    Your privacy is important to us. It is Karimpuzha MSF's policy to respect your privacy regarding any information we may collect from you across our website.
                 </p>
 
                 <h2 className="text-xl font-semibold text-white mt-4">Information We Collect</h2>

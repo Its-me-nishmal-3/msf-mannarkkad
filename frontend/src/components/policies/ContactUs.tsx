@@ -13,8 +13,8 @@ const ContactUs = () => {
                 <div className="grid md:grid-cols-2 gap-6 mt-6">
                     <div className="bg-gray-800 p-4 rounded-lg">
                         <h3 className="font-semibold text-emerald-400 mb-2">Address</h3>
-                        <p>MSF Mannarkkad Committee</p>
-                        <p>Mannarkkad, Palakkad District</p>
+                        <p>Karimpuzha MSF Committee</p>
+                        <p>Karimpuzha, Palakkad District</p>
                         <p>Kerala, India</p>
                     </div>
 
