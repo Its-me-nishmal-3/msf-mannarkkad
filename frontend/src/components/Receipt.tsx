@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Download, Home, Loader2 } from 'lucide-react';
+import { Download, Loader2 } from 'lucide-react';
 
 const Receipt: React.FC = () => {
     const { state } = useLocation();
@@ -58,7 +58,7 @@ const Receipt: React.FC = () => {
                 // Trigger download
                 const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
                 const link = document.createElement('a');
-                link.download = `receipt-${payment.name.replace(/\s+/g, '-').toLowerCase()}.jpg`;
+                link.download = `receipt - ${payment.name.replace(/\s+/g, '-').toLowerCase()}.jpg`;
                 link.href = dataUrl;
                 document.body.appendChild(link);
                 link.click();
@@ -117,12 +117,20 @@ const Receipt: React.FC = () => {
                         </>
                     )}
                 </button>
-                <button
-                    onClick={() => navigate('/')}
-                    className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-white text-gray-700 border border-gray-200 rounded-xl hover:bg-gray-50 transition-all shadow-lg font-bold active:scale-95"
-                >
-                    <Home size={20} /> Home
-                </button>
+                <div className="flex gap-4 w-full">
+                    <button
+                        onClick={() => navigate('/gen-poster')}
+                        className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-lg shadow-purple-500/20 flex items-center justify-center gap-2"
+                    >
+                        Generate Poster
+                    </button>
+                    <button
+                        onClick={() => navigate('/')}
+                        className="flex-1 bg-gray-800 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-xl transition-colors border border-gray-700"
+                    >
+                        Back to Home
+                    </button>
+                </div>
             </div>
         </div>
     );
