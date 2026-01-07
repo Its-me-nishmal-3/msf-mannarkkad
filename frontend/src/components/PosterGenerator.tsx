@@ -234,7 +234,7 @@ const PosterGenerator: React.FC = () => {
         }
     };
 
-    const handleCropComplete = useCallback((croppedArea: Area, croppedAreaPixels: Area) => {
+    const handleCropComplete = useCallback((_croppedArea: Area, croppedAreaPixels: Area) => {
         setCroppedAreaPixels(croppedAreaPixels);
     }, []);
 
