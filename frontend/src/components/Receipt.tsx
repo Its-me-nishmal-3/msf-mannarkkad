@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Download, Loader2 } from 'lucide-react';
+import { Download, Loader2, Share2 } from 'lucide-react';
 
 const Receipt: React.FC = () => {
     const { state } = useLocation();
@@ -116,6 +116,55 @@ const Receipt: React.FC = () => {
                             <Download size={20} /> Download
                         </>
                     )}
+                </button>
+                <button
+                    onClick={async () => {
+                        setIsDownloading(true);
+                        try {
+                            const canvas = document.createElement('canvas');
+                            const ctx = canvas.getContext('2d');
+                            const img = new Image();
+                            canvas.width = 2560;
+                            canvas.height = 3200;
+                            img.src = '/ricipt_thanks_with_name.jpg';
+                            await new Promise((resolve, reject) => {
+                                img.onload = resolve;
+                                img.onerror = reject;
+                            });
+                            if (ctx) {
+                                ctx.drawImage(img, 0, 0, 2560, 3200);
+                                ctx.font = 'bold 100px Arial, sans-serif';
+                                ctx.fillStyle = '#751d08';
+                                ctx.textAlign = 'left';
+                                ctx.textBaseline = 'middle';
+                                const x = 285;
+                                const y = 923;
+                                ctx.fillText(payment.name.toUpperCase(), x, y);
+
+                                const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+                                const blob = await (await fetch(dataUrl)).blob();
+                                const file = new File([blob], `receipt-${payment.name.replace(/\s+/g, '-').toLowerCase()}.jpg`, { type: 'image/jpeg' });
+
+                                if (navigator.share) {
+                                    await navigator.share({
+                                        files: [file],
+                                        title: 'MSF Receipt',
+                                        text: `Payment Receipt for ${payment.name}`
+                                    });
+                                } else {
+                                    alert("Sharing is not supported on this device.");
+                                }
+                            }
+                        } catch (e) {
+                            console.error(e);
+                        } finally {
+                            setIsDownloading(false);
+                        }
+                    }}
+                    disabled={isDownloading}
+                    className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all shadow-lg font-bold active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
+                >
+                    {isDownloading ? <Loader2 size={20} className="animate-spin" /> : <Share2 size={20} />} Share
                 </button>
                 <div className="flex gap-4 w-full">
                     <button

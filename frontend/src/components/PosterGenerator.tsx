@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
-import { Download, Upload, ArrowLeft, Loader2, Check, X } from 'lucide-react';
+import { Download, Upload, ArrowLeft, Loader2, Check, X, Share2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Cropper from 'react-easy-crop';
 
