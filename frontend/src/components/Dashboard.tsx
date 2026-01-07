@@ -84,10 +84,20 @@ const Dashboard: React.FC = () => {
                         </h1>
                         <p className="text-gray-400 text-xs md:text-sm">ഈത്തപ്പഴ ചലഞ്ച് 2026</p>
                     </div>
-                    <div className="flex gap-4">
+                    <div className="flex gap-4 items-center">
+                        <button
+                            onClick={() => navigate('/install-app')}
+                            className="flex flex-col items-center group"
+                            title="Install App"
+                        >
+                            <span className="text-xs text-emerald-400 font-semibold mb-0.5 group-hover:text-emerald-300 transition-colors">Use as App</span>
+                            <div className="bg-white/10 p-1.5 rounded-lg hover:bg-white/20 transition-all border border-white/10 group-hover:scale-105">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-300 group-hover:text-white"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" x2="12" y1="15" y2="3" /></svg>
+                            </div>
+                        </button>
                         <button
                             onClick={() => navigate('/history')}
-                            className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm transition-all border border-white/10"
+                            className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm transition-all border border-white/10 h-10"
                         >
                             History
                         </button>

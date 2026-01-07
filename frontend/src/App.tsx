@@ -6,6 +6,7 @@ import History from './components/History';
 import AdminLogin from './components/AdminLogin';
 import AdminDashboard from './components/AdminDashboard';
 import Footer from './components/Footer';
+import InstallPWA from './components/InstallPWA';
 
 // Policy Pages
 import ShippingPolicy from './components/policies/ShippingPolicy';
@@ -26,6 +27,7 @@ function App() {
             <Route path="/history" element={<History />} />
             <Route path="/login" element={<AdminLogin />} />
             <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/install-app" element={<InstallPWA />} />
 
             {/* Policy Routes */}
             <Route path="/shipping-policy" element={<ShippingPolicy />} />
