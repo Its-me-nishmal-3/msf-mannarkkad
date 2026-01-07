@@ -341,8 +341,8 @@ const PosterGenerator: React.FC = () => {
 
             {/* Inputs */}
             <div className="w-full max-w-md bg-gray-900 rounded-2xl p-4 space-y-4 mb-8 border border-gray-800">
-                <div className="flex gap-3">
-                    <div className="relative flex-1 bg-gray-800 rounded-xl overflow-hidden hover:ring-2 ring-emerald-500/50 transition-all cursor-pointer h-14 flex items-center justify-center border border-gray-700">
+                <div className="flex flex-col sm:flex-row gap-3">
+                    <div className="relative w-full sm:flex-1 bg-gray-800 rounded-xl overflow-hidden hover:ring-2 ring-emerald-500/50 transition-all cursor-pointer h-14 flex items-center justify-center border border-gray-700">
                         <input
                             type="file"
                             className="absolute inset-0 opacity-0 cursor-pointer z-10"
@@ -361,7 +361,7 @@ const PosterGenerator: React.FC = () => {
                         type="text"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        className="flex-[2] bg-gray-800 border border-gray-700 rounded-xl px-4 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 h-14"
+                        className="w-full sm:flex-[2] bg-gray-800 border border-gray-700 rounded-xl px-4 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 h-14"
                         placeholder="Enter your name"
                     />
                 </div>
