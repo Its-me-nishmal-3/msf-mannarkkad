@@ -255,6 +255,34 @@ const PosterGenerator: React.FC = () => {
     }, [croppedAreaPixels, tempImage]);
 
 
+    const handleShare = async () => {
+        if (!canvasRef.current) return;
+        setIsGenerating(true);
+
+        try {
+            const dataUrl = canvasRef.current.toDataURL('image/png', 1.0);
+            const blob = await (await fetch(dataUrl)).blob();
+            const file = new File([blob], `karimpuzha-poster-${name || 'msf'}.png`, { type: 'image/png' });
+
+            if (navigator.share) {
+                await navigator.share({
+                    files: [file],
+                    title: 'MSF Kamerpuzha Dates Challenge',
+                    text: 'Here is my poster for the MSF Kamerpuzha Dates Challenge!'
+                });
+            } else {
+                alert("Sharing is not supported on this device/browser. Please download instead.");
+            }
+        } catch (err) {
+            console.error("Share failed", err);
+            if ((err as any).name !== 'AbortError') {
+                alert("Failed to share poster");
+            }
+        } finally {
+            setIsGenerating(false);
+        }
+    };
+
     const handleDownload = () => {
         if (!canvasRef.current) return;
         setIsGenerating(true);
@@ -385,14 +413,24 @@ const PosterGenerator: React.FC = () => {
                 />
             </div>
 
-            <button
-                onClick={handleDownload}
-                disabled={!isCanvasReady || !userImage}
-                className="mt-8 w-full max-w-sm bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-4 rounded-xl shadow-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95"
-            >
-                {isGenerating ? <Loader2 className="animate-spin" /> : <Download />}
-                {isGenerating ? 'Generating...' : 'Download Poster'}
-            </button>
+            <div className="mt-8 w-full max-w-sm gap-3 flex">
+                <button
+                    onClick={handleDownload}
+                    disabled={!isCanvasReady || !userImage}
+                    className="flex-1 bg-gray-800 hover:bg-gray-700 text-white font-bold py-4 rounded-xl shadow-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95"
+                >
+                    {isGenerating ? <Loader2 className="animate-spin" /> : <Download />}
+                    {isGenerating ? 'Wait...' : 'Download'}
+                </button>
+                <button
+                    onClick={handleShare}
+                    disabled={!isCanvasReady || !userImage}
+                    className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-4 rounded-xl shadow-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95"
+                >
+                    {isGenerating ? <Loader2 className="animate-spin" /> : <Share2 />}
+                    {isGenerating ? 'Wait...' : 'Share'}
+                </button>
+            </div>
         </div>
     );
 };
