@@ -1,115 +1,333 @@
-import React, { useRef, useState } from 'react';
-import html2canvas from 'html2canvas';
-import { Download, Upload, ArrowLeft, Loader2 } from 'lucide-react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
+import { Download, Upload, ArrowLeft, Loader2, Check, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import Cropper from 'react-easy-crop';
+
+interface Point {
+    x: number;
+    y: number;
+}
+
+interface Area {
+    width: number;
+    height: number;
+    x: number;
+    y: number;
+}
+
+// Helper to create the cropped image
+const createImage = (url: string): Promise<HTMLImageElement> =>
+    new Promise((resolve, reject) => {
+        const image = new Image();
+        image.addEventListener('load', () => resolve(image));
+        image.addEventListener('error', (error) => reject(error));
+        image.setAttribute('crossOrigin', 'anonymous');
+        image.src = url;
+    });
+
+const getCroppedImg = async (
+    imageSrc: string,
+    pixelCrop: Area
+): Promise<string> => {
+    const image = await createImage(imageSrc);
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
+    if (!ctx) {
+        throw new Error('No 2d context');
+    }
+
+    canvas.width = pixelCrop.width;
+    canvas.height = pixelCrop.height;
+
+    ctx.drawImage(
+        image,
+        pixelCrop.x,
+        pixelCrop.y,
+        pixelCrop.width,
+        pixelCrop.height,
+        0,
+        0,
+        pixelCrop.width,
+        pixelCrop.height
+    );
+
+    return new Promise((resolve) => {
+        canvas.toBlob((file) => {
+            if (file) {
+                resolve(URL.createObjectURL(file));
+            }
+        }, 'image/png');
+    });
+};
 
 const PosterGenerator: React.FC = () => {
     const navigate = useNavigate();
-    const exportRef = useRef<HTMLDivElement>(null); // High-res hidden element
+    const canvasRef = useRef<HTMLCanvasElement>(null);
     const [name, setName] = useState('');
-    const [userImage, setUserImage] = useState<string | null>(null);
+    const [userImage, setUserImage] = useState<string | null>(null); // Final cropped image
     const [isGenerating, setIsGenerating] = useState(false);
+    const [templateImage, setTemplateImage] = useState<HTMLImageElement | null>(null);
+    const [isCanvasReady, setIsCanvasReady] = useState(false);
 
-    // Coordinate config (adjust these if template changes)
-    // Based on original: 
-    // Width: ~1600 (Assumed from X max 1322 + padding)
-    // Actually we will auto-detect dimension from the image itself.
+    // Cropping State
+    const [tempImage, setTempImage] = useState<string | null>(null); // Raw upload
+    const [isCropping, setIsCropping] = useState(false);
+    const [crop, setCrop] = useState<Point>({ x: 0, y: 0 });
+    const [zoom, setZoom] = useState(1);
+    const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
 
-    // For the PREVIEW (Responsive), we use percentages relative to the image size.
-    // We need to KNOW the image size to calculate percentages accurately if we want identical match.
-    // Or we can just use the pixel values if we create a "scaled" container.
+    // Coordinates configuration
+    // Based on User provided Map from the high-res (2560x3200) original
+    // Photo: 1138,2085,345,1132 (x2, y2, x1, y1) -> x=345, y=1132, w=793, h=953
+    // Name: 476,2173,1322,2247 -> x=476, y=2173, w=846, h=74
+    const COORDS = {
+        PHOTO: { x: 345, y: 1132, w: 793, h: 953 },
+        NAME: { x: 70, y: 2190, w: 846, h: 74 },
+        TEMPLATE_SRC: '/challange-frame.png'
+    };
 
-    // Let's use the Pixel-based Scaled Container approach. 
-    // It's WYSIWYG and simplest to maintain coords.
-    // We render ONE container.
-    // We scale it using CSS `transform` to fit the screen.
-    // On download, we remove the transform (or clone it), render, then restore? 
-    // Or just html2canvas(element, { scale: ... })?
+    // Load template image on mount
+    useEffect(() => {
+        const img = new Image();
+        img.src = COORDS.TEMPLATE_SRC;
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+            console.log("Template image loaded:", img.naturalWidth, img.naturalHeight);
+            setTemplateImage(img);
+        };
+        img.onerror = (err) => {
+            console.error("Failed to load template image", err);
+            // alert("Failed to load template image. Please check your internet connection or try again.");
+        };
+    }, []);
 
-    // Better: Render transparent/hidden High Res version for export.
-    // Render responsive version for user.
+    // Draw canvas whenever dependencies change
+    useEffect(() => {
+        if (!templateImage || !canvasRef.current) return;
 
-    // Let's use PERCENTAGES for the Preview.
-    // Photo: 345 / 1792 (approx width) ?
-    // Let's just use the loaded dimensions to compute styles dynamically.
+        const canvas = canvasRef.current;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
 
-    const [imgDim, setImgDim] = useState<{ w: number, h: number } | null>(null);
+        // Set canvas dimensions to match template
+        canvas.width = templateImage.naturalWidth;
+        canvas.height = templateImage.naturalHeight;
+
+        // The coordinates are based on the high-res original (2560x3200).
+        // The loaded template is smaller (819x1024).
+        // We scale coordinates down to fit.
+        const REFERENCE_WIDTH = 2560; // Confirmed via user logs
+        const scale = canvas.width / REFERENCE_WIDTH;
+
+        // console.log("Canvas Size:", canvas.width, canvas.height, "Scale Factor:", scale); 
+
+        // 1. Draw Template
+        ctx.drawImage(templateImage, 0, 0);
+
+        // 2. Draw User Photo (PRE-CROPPED now)
+        if (userImage) {
+            // console.log("Loading user image...");
+            const img = new Image();
+            // Data URLs don't need crossOrigin, and sometimes it breaks them.
+            // img.crossOrigin = 'anonymous'; 
+
+            img.onload = () => {
+                // console.log("User image loaded:", img.naturalWidth, img.naturalHeight);
+
+                // Scale coordinates
+                const x = COORDS.PHOTO.x * scale;
+                const y = COORDS.PHOTO.y * scale;
+                const w = COORDS.PHOTO.w * scale;
+                const h = COORDS.PHOTO.h * scale;
+
+                // Clip the area
+                ctx.save();
+                ctx.beginPath();
+                ctx.rect(x, y, w, h);
+                ctx.clip();
+
+                // Since image is ALREADY cropped to aspect ratio, just draw it covering the area for safety
+                // Or simply drawImage(img, x, y, w, h) if we trust the crop.
+                // Let's stick to "cover" logic just in case tiny rounding errors occur.
+                const imgRatio = img.naturalWidth / img.naturalHeight;
+                const areaRatio = w / h;
+
+                let drawW, drawH, drawX, drawY;
+
+                if (imgRatio > areaRatio) {
+                    // Image is wider than area
+                    drawH = h;
+                    drawW = h * imgRatio;
+                    drawX = x - (drawW - w) / 2;
+                    drawY = y;
+                } else {
+                    // Image is taller than area
+                    drawW = w;
+                    drawH = w / imgRatio;
+                    drawX = x;
+                    drawY = y - (drawH - h) / 2;
+                }
+
+                ctx.drawImage(img, drawX, drawY, drawW, drawH);
+                ctx.restore();
+
+                // 3. Draw Name AFTER photo
+                drawName(ctx, scale);
+                setIsCanvasReady(true);
+            };
+
+            img.onerror = (e) => {
+                console.error("Failed to load user image", e);
+                drawName(ctx, scale);
+                setIsCanvasReady(true);
+            };
+
+            img.src = userImage;
+        } else {
+            // No user image, just draw name
+            drawName(ctx, scale);
+            setIsCanvasReady(true);
+        }
+
+    }, [templateImage, userImage, name]);
+
+    const drawName = (ctx: CanvasRenderingContext2D, scale: number) => {
+        if (!name) return;
+
+        const x = COORDS.NAME.x * scale;
+        const y = COORDS.NAME.y * scale;
+        const w = COORDS.NAME.w * scale;
+        const h = COORDS.NAME.h * scale;
+
+        ctx.save();
+        // Scale font size as well.
+        // Base size 80 seems appropriate for 2560px width.
+        const fontSize = Math.round(40 * scale);
+        ctx.font = `bold ${fontSize}px Arial`;
+        ctx.fillStyle = '#000000';
+        ctx.textAlign = 'start';
+        ctx.textBaseline = 'middle';
+
+        // Convert input to uppercase
+        const text = name.toUpperCase();
+
+        // Center point
+        const centerX = x + w / 2;
+        const centerY = y + h / 2;
+
+        ctx.fillText(text, centerX, centerY);
+        ctx.restore();
+    };
+
 
     const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             const reader = new FileReader();
             reader.onload = (event) => {
                 if (event.target?.result) {
-                    setUserImage(event.target.result as string);
+                    setTempImage(event.target.result as string);
+                    setIsCropping(true); // Open cropper
                 }
             };
             reader.readAsDataURL(e.target.files[0]);
         }
     };
 
-    const handleDownload = async () => {
-        if (!exportRef.current) return;
+    const handleCropComplete = useCallback((croppedArea: Area, croppedAreaPixels: Area) => {
+        setCroppedAreaPixels(croppedAreaPixels);
+    }, []);
+
+    const showCroppedImage = useCallback(async () => {
+        if (!tempImage || !croppedAreaPixels) return;
+        try {
+            const croppedImage = await getCroppedImg(
+                tempImage,
+                croppedAreaPixels
+            );
+            setUserImage(croppedImage);
+            setIsCropping(false);
+            setTempImage(null); // Clear temp
+        } catch (e) {
+            console.error(e);
+            alert("Could not crop image");
+        }
+    }, [croppedAreaPixels, tempImage]);
+
+
+    const handleDownload = () => {
+        if (!canvasRef.current) return;
         setIsGenerating(true);
 
         try {
-            // Force the export ref to be visible for capture if needed, or just capture it.
-            // Since it is 'absolute' and 'z-index: -10', it is in DOM but hidden.
-            const canvas = await html2canvas(exportRef.current, {
-                useCORS: true,
-                scale: 1, // Capture at native resolution
-                backgroundColor: null,
-            });
-
+            // Create a temporary link
             const link = document.createElement('a');
-            link.download = `karimpuzha - poster - ${name || 'msf'}.png`;
-            link.href = canvas.toDataURL('image/png', 1.0);
+            link.download = `karimpuzha-poster-${name || 'msf'}.png`;
+            link.href = canvasRef.current.toDataURL('image/png', 1.0);
+            document.body.appendChild(link);
             link.click();
+            document.body.removeChild(link);
         } catch (err) {
-            console.error(err);
-            alert('Failed to generate poster');
+            console.error("Download failed", err);
+            alert("Failed to download poster");
         } finally {
             setIsGenerating(false);
         }
     };
 
-    const getStyle = (isExport: boolean) => {
-        if (!imgDim) return {};
-
-        // Coords
-        const PHOTO = { x: 345, y: 1132, w: 793, h: 953 };
-        const NAME = { x: 476, y: 2173, w: 846, h: 74 };
-
-        // Convert to Percentages
-        const photoStyle: React.CSSProperties = {
-            position: 'absolute',
-            left: `${(PHOTO.x / imgDim.w) * 100}% `,
-            top: `${(PHOTO.y / imgDim.h) * 100}% `,
-            width: `${(PHOTO.w / imgDim.w) * 100}% `,
-            height: `${(PHOTO.h / imgDim.h) * 100}% `,
-        };
-
-        const nameStyle: React.CSSProperties = {
-            position: 'absolute',
-            left: `${(NAME.x / imgDim.w) * 100}% `,
-            top: `${(NAME.y / imgDim.h) * 100}% `,
-            width: `${(NAME.w / imgDim.w) * 100}% `,
-            height: `${(NAME.h / imgDim.h) * 100}% `,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-        };
-
-        // Font scaling for responsive preview
-        // For export, use fixed px. For preview, use vw or %? 
-        // Simple: Font size is ~60px relative to ~2000px height. 
-        // 60/2000 = 3%.
-        const fontSize = isExport ? '60px' : '3cqi'; // container query units? or just 3%?
-
-        return { photoStyle, nameStyle, fontSize };
-    };
-
     return (
         <div className="min-h-screen bg-gray-950 text-white p-4 flex flex-col items-center">
+
+            {/* Cropper Modal */}
+            {isCropping && tempImage && (
+                <div className="fixed inset-0 z-50 bg-black flex flex-col">
+                    <div className="relative flex-1 w-full bg-gray-900">
+                        <Cropper
+                            image={tempImage}
+                            crop={crop}
+                            zoom={zoom}
+                            aspect={COORDS.PHOTO.w / COORDS.PHOTO.h}
+                            onCropChange={setCrop}
+                            onCropComplete={handleCropComplete}
+                            onZoomChange={setZoom}
+                        />
+                    </div>
+                    {/* Controls */}
+                    <div className="bg-gray-900 p-6 flex flex-col gap-4 border-t border-gray-800">
+                        <div className="flex items-center gap-4">
+                            <span className="text-sm font-medium">Zoom</span>
+                            <input
+                                type="range"
+                                value={zoom}
+                                min={1}
+                                max={3}
+                                step={0.1}
+                                aria-labelledby="Zoom"
+                                onChange={(e) => {
+                                    setZoom(Number(e.target.value));
+                                }}
+                                className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                            />
+                        </div>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => { setIsCropping(false); setTempImage(null); }}
+                                className="flex-1 py-3 px-4 rounded-xl bg-gray-800 text-white font-medium hover:bg-gray-700 transition-colors flex items-center justify-center gap-2"
+                            >
+                                <X className="w-5 h-5" /> Cancel
+                            </button>
+                            <button
+                                onClick={showCroppedImage}
+                                className="flex-1 py-3 px-4 rounded-xl bg-emerald-600 text-white font-bold hover:bg-emerald-500 transition-colors flex items-center justify-center gap-2"
+                            >
+                                <Check className="w-5 h-5" /> Confirm Crop
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+
             <button
                 onClick={() => navigate('/')}
                 className="self-start text-gray-400 hover:text-white flex items-center gap-2 mb-6"
@@ -131,14 +349,12 @@ const PosterGenerator: React.FC = () => {
                             onChange={handleImageUpload}
                             accept="image/*"
                         />
-                        {userImage ? (
-                            <img src={userImage} className="w-full h-full object-cover opacity-50" alt="" />
-                        ) : (
-                            <Upload className="w-6 h-6 text-gray-400" />
-                        )}
-                        <span className="absolute text-xs font-bold text-white drop-shadow-md">
-                            {userImage ? 'Change Photo' : 'Upload Photo'}
-                        </span>
+                        <div className="flex items-center gap-2 pointer-events-none">
+                            <Upload className="w-5 h-5 text-emerald-500" />
+                            <span className="text-xs font-bold text-gray-300">
+                                {userImage ? 'Change Photo' : 'Upload Photo'}
+                            </span>
+                        </div>
                     </div>
 
                     <input
@@ -151,117 +367,32 @@ const PosterGenerator: React.FC = () => {
                 </div>
             </div>
 
-            {/* PREVIEW CONTAINER */}
+            {/* PREVIEW AREA */}
             <div className="w-full max-w-sm relative rounded-xl overflow-hidden shadow-2xl border border-gray-800 bg-gray-900">
-                {/* Loader until dimensions known */}
-                {!imgDim && (
+                {!templateImage && (
                     <div className="h-96 flex items-center justify-center text-gray-500 gap-2">
                         <Loader2 className="animate-spin" /> Loading Template...
                     </div>
                 )}
 
                 {/* 
-                   Hidden "Source of Truth" Image to detect natural size 
-                   Once loaded, we set dimensions and show the UI.
+                   Canvas serves as preview. 
+                   Responsive CSS via class w-full.
                 */}
-                <img
-                    src="/challange-frame.png"
-                    className="absolute opacity-0 pointer-events-none"
-                    onLoad={(e) => setImgDim({ w: e.currentTarget.naturalWidth, h: e.currentTarget.naturalHeight })}
-                    alt=""
+                <canvas
+                    ref={canvasRef}
+                    className="w-full h-auto block"
                 />
-
-                {/* Visible Preview */}
-                {imgDim && (
-                    <div className="relative w-full text-black" style={{ containerType: 'inline-size' }}>
-                        <img src="/challange-frame.png" className="w-full h-auto block" alt="template" />
-
-                        {/* User Photo */}
-                        {userImage && (
-                            <div style={getStyle(false).photoStyle} className="overflow-hidden">
-                                <img src={userImage} className="w-full h-full object-cover" alt="user" />
-                            </div>
-                        )}
-
-                        {/* Name */}
-                        {name && (
-                            <div style={getStyle(false).nameStyle}>
-                                <span className="font-bold uppercase" style={{ fontSize: '3cqw' }}>{name}</span>
-                            </div>
-                        )}
-                    </div>
-                )}
             </div>
 
             <button
                 onClick={handleDownload}
-                disabled={!userImage || isGenerating || !imgDim}
+                disabled={!isCanvasReady || !userImage}
                 className="mt-8 w-full max-w-sm bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-4 rounded-xl shadow-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95"
             >
                 {isGenerating ? <Loader2 className="animate-spin" /> : <Download />}
                 {isGenerating ? 'Generating...' : 'Download Poster'}
             </button>
-
-
-            {/* 
-                EXPORT CONTAINER (Hidden, High Res)
-                This replicates the preview but at fixed 1:1 pixel resolution matching the source image.
-                We position it absolutely off-screen.
-            */}
-            {imgDim && (
-                <div
-                    ref={exportRef}
-                    style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: -9999,
-                        width: imgDim.w,
-                        height: imgDim.h,
-                        backgroundColor: 'white',
-                        zIndex: -50,
-                    }}
-                >
-                    <img src="/challange-frame.png" style={{ width: '100%', height: '100%' }} alt="" />
-
-                    {userImage && (
-                        <div style={{
-                            position: 'absolute',
-                            left: 345,
-                            top: 1132,
-                            width: 793,
-                            height: 953,
-                            overflow: 'hidden'
-                        }}>
-                            <img src={userImage} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
-                        </div>
-                    )}
-
-                    {name && (
-                        <div style={{
-                            position: 'absolute',
-                            left: 476,
-                            top: 2173,
-                            width: 846,
-                            height: 74, // Height seems small for a name box? 74px. 
-                            // Check map coords: 2173 to 2247. Correct.
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center'
-                        }}>
-                            <span style={{
-                                fontFamily: 'Arial, sans-serif',
-                                fontWeight: 'bold',
-                                fontSize: '50px', // Fixed size for export
-                                color: 'black',
-                                textTransform: 'uppercase'
-                            }}>
-                                {name}
-                            </span>
-                        </div>
-                    )}
-                </div>
-            )}
-
         </div>
     );
 };
