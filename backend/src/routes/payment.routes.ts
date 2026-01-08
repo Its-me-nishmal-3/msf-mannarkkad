@@ -155,10 +155,26 @@ router.get('/stats', async (req, res) => {
 });
 
 // Get History (Limit 50)
+// Get History (Paginated)
 router.get('/history', async (req, res) => {
     try {
-        const history = await Payment.find({ status: 'success' }).sort({ createdAt: -1 }).limit(50);
-        res.json(history);
+        const page = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 10;
+        const skip = (page - 1) * limit;
+
+        const total = await Payment.countDocuments({ status: 'success' });
+
+        const payments = await Payment.find({ status: 'success' })
+            .select('name ward amount quantity paymentId createdAt status') // Exclude mobile, orderId
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
+
+        res.json({
+            payments,
+            hasMore: skip + payments.length < total,
+            total
+        });
     } catch (error) {
         console.error('Error fetching history:', error);
         res.status(500).json({ message: 'Error fetching history' });
