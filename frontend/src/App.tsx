@@ -8,6 +8,7 @@ import AdminDashboard from './components/AdminDashboard';
 import Footer from './components/Footer';
 import InstallPWA from './components/InstallPWA';
 import PosterGenerator from './components/PosterGenerator';
+import NameWithPoster from './components/NameWithPoster';
 
 // Policy Pages
 import ShippingPolicy from './components/policies/ShippingPolicy';
@@ -30,6 +31,7 @@ function App() {
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/install-app" element={<InstallPWA />} />
             <Route path="/gen-poster" element={<PosterGenerator />} />
+            <Route path="/namewithposter" element={<NameWithPoster />} />
 
             {/* Policy Routes */}
             <Route path="/shipping-policy" element={<ShippingPolicy />} />
