@@ -257,7 +257,7 @@ const AdminDashboard: React.FC = () => {
                             {[
                                 'ATTASSERY', 'AMBALAMPADAM', 'THOTTARA', 'KARIPAMANNA',
                                 'PEZHUMATTA', 'KULUKKILIYAD', 'KARIMPUZHA', 'POMBRA',
-                                'KOOTTILAKKADAV', 'KOLLAMKODE', 'VAKKADAPURAM', 'OTHERS'
+                                'KOOTTILAKKADAV', 'KOLLAMKODE', 'VAKKADAPURAM', 'KODUNNOD', 'OTHERS'
                             ].map((ward, i) => (
                                 <option key={i} value={ward} className="bg-[#1e293b] text-white">{ward}</option>
                             ))}

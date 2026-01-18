@@ -160,7 +160,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ onClose }) => {
                             {[
                                 'ATTASSERY', 'AMBALAMPADAM', 'THOTTARA', 'KARIPAMANNA',
                                 'PEZHUMATTA', 'KULUKKILIYAD', 'KARIMPUZHA', 'POMBRA',
-                                'KOOTTILAKKADAV', 'KOLLAMKODE', 'VAKKADAPURAM', 'OTHERS'
+                                'KOOTTILAKKADAV', 'KOLLAMKODE', 'VAKKADAPURAM', 'KODUNNOD', 'OTHERS'
                             ].map((unit, i) => (
                                 <option key={i} value={unit} className="bg-[#1e293b] text-white">
                                     {unit}

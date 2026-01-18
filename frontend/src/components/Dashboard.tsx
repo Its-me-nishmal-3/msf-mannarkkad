@@ -20,7 +20,7 @@ const SOCKET_URL = 'https://msf-karimpuzha.onrender.com';
 const UNIT_NAMES = [
     'ATTASSERY', 'AMBALAMPADAM', 'THOTTARA', 'KARIPAMANNA',
     'PEZHUMATTA', 'KULUKKILIYAD', 'KARIMPUZHA', 'POMBRA',
-    'KOOTTILAKKADAV', 'KOLLAMKODE', 'VAKKADAPURAM', 'OTHERS'
+    'KOOTTILAKKADAV', 'KOLLAMKODE', 'VAKKADAPURAM', 'KODUNNOD', 'OTHERS'
 ];
 
 const BANNERS = [banner1, banner2, banner3, banner4, banner5, banner6, banner7];
