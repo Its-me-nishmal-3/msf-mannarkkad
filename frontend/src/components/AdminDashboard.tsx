@@ -7,6 +7,7 @@ import {
     LineChart, Line
 } from 'recharts';
 import { io } from 'socket.io-client';
+import * as XLSX from 'xlsx';
 
 const SOCKET_URL = 'https://msf-karimpuzha.onrender.com';
 
@@ -39,6 +40,7 @@ const AdminDashboard: React.FC = () => {
     const [analytics, setAnalytics] = useState<Analytics | null>(null);
     const [search, setSearch] = useState('');
     const [wardFilter, setWardFilter] = useState('All');
+    const [statusFilter, setStatusFilter] = useState('All');
     const navigate = useNavigate();
 
     const fetchPayments = async () => {
@@ -117,6 +119,32 @@ const AdminDashboard: React.FC = () => {
         localStorage.removeItem('adminToken');
         navigate('/login');
     };
+
+    const filteredPayments = payments.filter(payment => {
+        if (statusFilter === 'All') return true;
+        const status = payment.status || 'success';
+        return status.toLowerCase() === statusFilter.toLowerCase();
+    });
+
+    const handleExport = () => {
+        const dataToExport = filteredPayments.map(p => ({
+            Date: new Date(p.createdAt).toLocaleDateString(),
+            Name: p.name,
+            Mobile: p.mobile,
+            Ward: p.ward,
+            Quantity: p.quantity,
+            Amount: p.amount,
+            Status: p.status,
+            PaymentID: p.paymentId
+        }));
+
+        const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Payments");
+        XLSX.writeFile(workbook, `Payments_Data_${new Date().toISOString().split('T')[0]}.xlsx`);
+    };
+
+
 
     return (
         <div className="p-6 max-w-7xl mx-auto min-h-screen pb-24 space-y-8">
@@ -262,6 +290,25 @@ const AdminDashboard: React.FC = () => {
                                 <option key={i} value={ward} className="bg-[#1e293b] text-white">{ward}</option>
                             ))}
                         </select>
+
+                        <select
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value)}
+                            className="glass-input w-full bg-[#1e293b] text-white"
+                        >
+                            <option value="All" className="bg-[#1e293b] text-white">All Status</option>
+                            <option value="Success" className="bg-[#1e293b] text-white">Success</option>
+                            <option value="Failed" className="bg-[#1e293b] text-white">Failed</option>
+                            <option value="Pending" className="bg-[#1e293b] text-white">Pending</option>
+                        </select>
+
+                        <button
+                            onClick={handleExport}
+                            className="glass-button w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white py-2 px-4 rounded-lg transition-all transform hover:scale-[1.02]"
+                        >
+                            <Package size={20} />
+                            Export to Excel
+                        </button>
                     </div>
 
                     {/* Table */}
@@ -281,12 +328,12 @@ const AdminDashboard: React.FC = () => {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-white/5">
-                                    {payments.length === 0 ? (
+                                    {filteredPayments.length === 0 ? (
                                         <tr>
-                                            <td colSpan={7} className="p-8 text-center text-gray-500">No payments found</td>
+                                            <td colSpan={8} className="p-8 text-center text-gray-500">No payments found</td>
                                         </tr>
                                     ) : (
-                                        payments.map((p) => (
+                                        filteredPayments.map((p) => (
                                             <tr key={p._id} className="hover:bg-white/5 transition-colors">
                                                 <td className="p-4 text-sm text-gray-300">{new Date(p.createdAt).toLocaleDateString()}</td>
                                                 <td className="p-4 font-semibold">{p.name}</td>
